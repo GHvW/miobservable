@@ -1,11 +1,44 @@
+// @ts-check
+
+/**
+ * @typedef {Object} Observer
+ * @prop {(value: any) => void} next 
+ * @prop {() => void} complete
+ * @prop {(error: any) => void} error
+ */
 
 
+/**
+ * @typedef {Object} Disposable
+ * @prop {() => void} unsubscribe
+ */
+
+/**
+ * @typedef {Object} IObservable
+ * @prop {(subscriber: Observer) => Disposable} subscribe
+ */
+
+
+/**
+ * @extends IObservable
+ */
 class Observable {
 
+    /**
+     * A function that defines what to do with the source data
+     * returning a function that will cleanup and cancel the subscription if necessary
+     * @param {(subscriber: Observer) => () => void} subscriberFn
+     */
     constructor(subscriberFn) {
         this.subscriberFn = subscriberFn;
     }
 
+
+    /**
+     * 
+     * @param {Observer} subscriber
+     * @returns {Disposable}
+     */
     subscribe(subscriber) {
         const cancel = this.subscriberFn(subscriber);
         return { unsubscribe: cancel };
@@ -13,6 +46,9 @@ class Observable {
 }
 
 
+/**
+ * @extends IObservable
+ */
 class SharedObservable {
     #subscribers = new Set();
     #started = false;
@@ -67,6 +103,8 @@ const onetwothree =
         subscriber.next(2);
         subscriber.next(3);
         subscriber.complete();
+
+        return () => undefined;
     });
 
 
